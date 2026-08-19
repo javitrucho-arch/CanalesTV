@@ -26,7 +26,6 @@
             margin: 0 auto;
         }
         
-        /* === TÍTULO CON ESPACIO REDUCIDO === */
         .header {
             text-align: center;
             padding: 10px 0 12px;
@@ -38,7 +37,6 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        /* === FIN TÍTULO CON ESPACIO REDUCIDO === */
         
         .player-float {
             position: fixed;
@@ -276,6 +274,7 @@
         .btn-verify {
             background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
             color: #fff;
+            flex: 1.2;
         }
         
         .btn-verify:hover:not(:disabled) {
@@ -301,6 +300,21 @@
         .btn-reset-verify:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 5px 20px rgba(108, 108, 108, 0.4);
+        }
+        
+        .btn-delete-failed {
+            background: linear-gradient(135deg, #f5576c 0%, #f093fb 100%);
+            color: #fff;
+            flex: 0.5;
+            min-width: 44px;
+            max-width: 44px;
+            padding: 12px 8px;
+            font-size: 1.1rem;
+        }
+        
+        .btn-delete-failed:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(245, 87, 108, 0.4);
         }
         
         .btn-select-all {
@@ -340,6 +354,16 @@
             flex: 1;
             max-width: none;
             min-width: 50px;
+        }
+        
+        .verify-group .btn-verify {
+            flex: 1.2;
+        }
+        
+        .verify-group .btn-delete-failed {
+            flex: 0.5;
+            min-width: 44px;
+            max-width: 44px;
         }
         
         .verify-group label {
@@ -407,7 +431,7 @@
         .channel-item {
             display: flex;
             align-items: center;
-            gap: 12px;
+            gap: 10px;
             padding: 10px 12px;
             margin-bottom: 6px;
             background: rgba(255,255,255,0.05);
@@ -449,7 +473,6 @@
             }
         }
         
-        /* === CHECKBOX MÁS GRANDE === */
         .channel-item input[type="checkbox"] {
             width: 22px;
             height: 22px;
@@ -457,7 +480,6 @@
             cursor: pointer;
             flex-shrink: 0;
         }
-        /* === FIN CHECKBOX MÁS GRANDE === */
         
         .channel-info {
             flex: 1;
@@ -466,7 +488,6 @@
             min-width: 0;
         }
         
-        /* === LETRA DE CANALES MÁS GRANDE === */
         .channel-name {
             font-weight: 600;
             font-size: 1.2rem;
@@ -482,7 +503,6 @@
             font-size: 0.85rem;
             margin-top: 2px;
         }
-        /* === FIN LETRA DE CANALES MÁS GRANDE === */
         
         .channel-status .status-working {
             color: #38ef7d;
@@ -498,26 +518,25 @@
         
         .channel-actions {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: wrap;
         }
         
-        /* === ICONOS DE CANALES MÁS GRANDES === */
         .btn-icon {
             background: rgba(255,255,255,0.05);
             color: #fff;
             border: none;
-            padding: 6px 10px;
+            padding: 4px 8px;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s;
-            font-size: 1rem;
+            font-size: 1.1rem;
+            line-height: 1;
         }
         
         .btn-icon i {
-            font-size: 1rem;
+            font-size: 1.1rem;
         }
-        /* === FIN ICONOS DE CANALES MÁS GRANDES === */
         
         .btn-icon:hover {
             background: rgba(255,255,255,0.1);
@@ -587,7 +606,6 @@
             background: rgba(56, 239, 125, 0.05);
         }
         
-        /* === BADGE REPRODUCIENDO MÁS GRANDE === */
         .badge-playing {
             background: rgba(56, 239, 125, 0.2);
             color: #38ef7d;
@@ -596,7 +614,6 @@
             font-size: 0.75rem;
             font-weight: 600;
         }
-        /* === FIN BADGE REPRODUCIENDO MÁS GRANDE === */
         
         .import-info {
             background: rgba(255, 255, 255, 0.03);
@@ -649,22 +666,6 @@
             max-width: none;
         }
         
-        .sw-status {
-            display: block;
-            width: 100%;
-            margin-top: 5px;
-            font-size: 0.8rem;
-            opacity: 0.7;
-        }
-        
-        .sw-status.active {
-            color: #38ef7d;
-        }
-        
-        .sw-status.inactive {
-            color: #f2994a;
-        }
-        
         @media (max-width: 600px) {
             .controls {
                 flex-direction: column;
@@ -686,6 +687,16 @@
             
             .verify-group .btn {
                 flex: 1;
+            }
+            
+            .verify-group .btn-verify {
+                flex: 1.2;
+            }
+            
+            .verify-group .btn-delete-failed {
+                flex: 0.5;
+                min-width: 44px;
+                max-width: 44px;
             }
             
             .selection-group {
@@ -801,7 +812,6 @@
             <span>🟢 OK: <span id="workingChannels">0</span></span>
             <span>🔴 Fail: <span id="failedChannels">0</span></span>
             <span>▶️ <span id="playingStatus">Sin reprod.</span></span>
-            <span class="sw-status" id="swStatus">⏳ Verificando Service Worker...</span>
         </div>
         
         <div class="progress-bar" id="progressBar">
@@ -829,12 +839,15 @@
             
             <div class="verify-group">
                 <button class="btn btn-verify" id="btnVerify" onclick="startVerification()">
-                    <i class="fas fa-check-double"></i> Verificar
+                    Verificar
                 </button>
                 <label for="verifyTimeout">Seg:</label>
                 <input type="number" id="verifyTimeout" value="5" min="2" max="30" />
                 <button class="btn btn-reset-verify" onclick="resetVerification()" title="Reiniciar verificación desde el principio">
                     <i class="fas fa-undo"></i>
+                </button>
+                <button class="btn btn-delete-failed" onclick="deleteFailedChannels()" title="Borrar canales que no funcionan">
+                    <i class="fas fa-trash"></i>
                 </button>
             </div>
             
@@ -874,215 +887,14 @@
     <div class="toast" id="toast"></div>
     
     <script>
-        // ==========================================
-        // SERVICE WORKER EMBEBIDO EN EL MISMO HTML
-        // ==========================================
-        
-        // Definir el código del Service Worker como string
-        const SERVICE_WORKER_CODE = `
-            // Service Worker para verificación en segundo plano
-            const CACHE_NAME = 'iptv-cache-v1';
-            
-            self.addEventListener('message', (event) => {
-                if (event.data && event.data.type === 'VERIFY_CHANNELS') {
-                    verifyChannelsInBackground(event.data.channels, event.data.timeout || 5000);
-                }
-            });
-            
-            async function verifyChannelsInBackground(channels, timeout) {
-                const results = [];
-                const total = channels.length;
-                let working = 0;
-                let failed = 0;
-                
-                for (let i = 0; i < channels.length; i++) {
-                    const channel = channels[i];
-                    const result = await verifyChannel(channel.link, timeout);
-                    results.push({
-                        index: channel.index,
-                        working: result
-                    });
-                    
-                    if (result) working++;
-                    else failed++;
-                    
-                    // Enviar progreso al cliente
-                    const clients = await self.clients.matchAll();
-                    clients.forEach(client => {
-                        client.postMessage({
-                            type: 'VERIFICATION_PROGRESS',
-                            current: i + 1,
-                            total: total,
-                            channel: channel,
-                            result: result,
-                            working: working,
-                            failed: failed
-                        });
-                    });
-                }
-                
-                // Enviar resultados finales
-                const clients = await self.clients.matchAll();
-                clients.forEach(client => {
-                    client.postMessage({
-                        type: 'VERIFICATION_COMPLETE',
-                        results: results,
-                        working: working,
-                        failed: failed
-                    });
-                });
-            }
-            
-            function verifyChannel(url, timeout) {
-                return new Promise((resolve) => {
-                    let resolved = false;
-                    
-                    const controller = new AbortController();
-                    const timeoutId = setTimeout(() => {
-                        if (!resolved) {
-                            resolved = true;
-                            controller.abort();
-                            resolve(false);
-                        }
-                    }, timeout);
-                    
-                    fetch(url, {
-                        method: 'HEAD',
-                        signal: controller.signal,
-                        mode: 'no-cors'
-                    })
-                    .then(() => {
-                        if (!resolved) {
-                            resolved = true;
-                            clearTimeout(timeoutId);
-                            resolve(true);
-                        }
-                    })
-                    .catch(() => {
-                        if (!resolved) {
-                            resolved = true;
-                            clearTimeout(timeoutId);
-                            resolve(false);
-                        }
-                    });
-                });
-            }
-            
-            self.addEventListener('install', (event) => {
-                event.waitUntil(
-                    caches.open(CACHE_NAME).then((cache) => {
-                        return cache.addAll([
-                            '/index.html',
-                            '/manifest.json'
-                        ]);
-                    })
-                );
-            });
-            
-            self.addEventListener('activate', (event) => {
-                event.waitUntil(
-                    caches.keys().then((cacheNames) => {
-                        return Promise.all(
-                            cacheNames.map((cacheName) => {
-                                if (cacheName !== CACHE_NAME) {
-                                    return caches.delete(cacheName);
-                                }
-                            })
-                        );
-                    })
-                );
-            });
-        `;
-        
-        // ==========================================
-        // REGISTRO DEL SERVICE WORKER DESDE BLOB
-        // ==========================================
-        
-        let swRegistration = null;
-        let swActive = false;
-        
-        async function registerServiceWorker() {
-            try {
-                // Crear un blob con el código del Service Worker
-                const blob = new Blob([SERVICE_WORKER_CODE], { type: 'application/javascript' });
-                const swUrl = URL.createObjectURL(blob);
-                
-                // Registrar el Service Worker
-                const registration = await navigator.serviceWorker.register(swUrl);
-                swRegistration = registration;
-                swActive = true;
-                
-                console.log('✅ Service Worker registrado desde blob');
-                updateSWStatus(true);
-                
-                // Escuchar mensajes del Service Worker
-                navigator.serviceWorker.addEventListener('message', (event) => {
-                    handleSWMessage(event.data);
-                });
-                
-                // Verificar estado del SW
-                if (navigator.serviceWorker.controller) {
-                    console.log('✅ Service Worker controlando la página');
-                } else {
-                    console.log('⏳ Esperando que el Service Worker tome control...');
-                    // Forzar toma de control
-                    navigator.serviceWorker.ready.then(() => {
-                        console.log('✅ Service Worker listo');
-                    });
-                }
-                
-                return registration;
-            } catch (error) {
-                console.error('❌ Error al registrar Service Worker:', error);
-                swActive = false;
-                updateSWStatus(false);
-                return null;
-            }
-        }
-        
-        function updateSWStatus(active) {
-            const statusEl = document.getElementById('swStatus');
-            if (statusEl) {
-                if (active) {
-                    statusEl.textContent = '✅ Verificación en segundo plano disponible';
-                    statusEl.className = 'sw-status active';
-                } else {
-                    statusEl.textContent = '⚠️ Verificación en segundo plano no disponible (modo normal)';
-                    statusEl.className = 'sw-status inactive';
-                }
-            }
-        }
-        
-        // ==========================================
-        // MANEJO DE MENSAJES DEL SERVICE WORKER
-        // ==========================================
-        
-        function handleSWMessage(data) {
-            console.log('📨 Mensaje del Service Worker:', data);
-            
-            if (data.type === 'VERIFICATION_PROGRESS') {
-                updateVerificationProgress(
-                    data.current, 
-                    data.total, 
-                    data.channel, 
-                    data.result,
-                    data.working,
-                    data.failed
-                );
-            } else if (data.type === 'VERIFICATION_COMPLETE') {
-                applyVerificationResults(data.results);
-                finishVerification(data.working, data.failed);
-            }
-        }
-        
-        // ==========================================
-        // FUNCIONES DE VERIFICACIÓN MEJORADAS
-        // ==========================================
-        
+        // Base de datos en localStorage
+        let channels = JSON.parse(localStorage.getItem('iptvChannels')) || [];
+        let currentVideoIndex = null;
+        let isPiPActive = false;
         let isVerifying = false;
         let verificationCanceled = false;
-        let wakeLock = null;
         
+        // Obtener timeout de verificación
         function getVerifyTimeout() {
             const input = document.getElementById('verifyTimeout');
             let value = parseInt(input.value);
@@ -1091,284 +903,28 @@
             return value;
         }
         
-        async function requestWakeLock() {
-            try {
-                if ('wakeLock' in navigator) {
-                    wakeLock = await navigator.wakeLock.request('screen');
-                    console.log('🔒 Wake Lock activado');
-                }
-            } catch (err) {
-                console.log('⚠️ Error al activar Wake Lock:', err);
-            }
-        }
-        
-        function releaseWakeLock() {
-            if (wakeLock) {
-                try {
-                    wakeLock.release();
-                    wakeLock = null;
-                    console.log('🔓 Wake Lock liberado');
-                } catch (err) {
-                    console.log('⚠️ Error al liberar Wake Lock:', err);
-                }
-            }
-        }
-        
-        // Verificación principal
-        async function startVerification() {
+        // Borrar canales que no funcionan
+        function deleteFailedChannels() {
             if (isVerifying) {
-                verificationCanceled = true;
-                isVerifying = false;
-                releaseWakeLock();
-                
-                const btn = document.getElementById('btnVerify');
-                btn.classList.remove('verifying');
-                btn.innerHTML = '<i class="fas fa-check-double"></i> Verificar';
-                
-                showToast('⏹️ Verificación cancelada');
-                
-                // Limpiar estados de verificación
-                channels.forEach(c => {
-                    c.verifying = false;
-                });
-                renderChannels();
+                showToast('⚠️ Espera a que termine la verificación');
                 return;
             }
             
-            const toVerify = channels.filter(c => c.verified !== true);
-            if (toVerify.length === 0) {
-                showToast('✅ Todos los canales ya están verificados');
+            const failedChannels = channels.filter(c => c.verified === false);
+            if (failedChannels.length === 0) {
+                showToast('✅ No hay canales que no funcionen');
                 return;
             }
             
-            const timeout = getVerifyTimeout() * 1000;
-            
-            // Verificar si tenemos Service Worker activo
-            if (swActive && navigator.serviceWorker.controller) {
-                // Usar Service Worker para verificación en segundo plano
-                const channelsToVerify = channels.map((c, index) => ({
-                    name: c.name,
-                    link: c.link,
-                    index: index
-                }));
-                
-                try {
-                    await requestWakeLock();
-                    
-                    navigator.serviceWorker.controller.postMessage({
-                        type: 'VERIFY_CHANNELS',
-                        channels: channelsToVerify,
-                        timeout: timeout
-                    });
-                    
-                    isVerifying = true;
-                    verificationCanceled = false;
-                    
-                    const btn = document.getElementById('btnVerify');
-                    btn.classList.add('verifying');
-                    btn.innerHTML = '<i class="fas fa-stop"></i> Cancelar';
-                    
-                    showToast('🔄 Verificando canales en segundo plano...');
-                    
-                    // Mostrar barra de progreso
-                    const progressBar = document.getElementById('progressBar');
-                    progressBar.classList.add('active');
-                    
-                } catch (error) {
-                    console.error('❌ Error al enviar mensaje al SW:', error);
-                    // Fallback a verificación normal
-                    showToast('⚠️ Usando verificación normal...');
-                    await startVerificationNormal(timeout);
-                }
-            } else {
-                // Fallback: verificación normal
-                await startVerificationNormal(timeout);
-            }
-        }
-        
-        // Verificación normal (fallback)
-        async function startVerificationNormal(timeout) {
-            isVerifying = true;
-            verificationCanceled = false;
-            
-            const btn = document.getElementById('btnVerify');
-            btn.classList.add('verifying');
-            btn.innerHTML = '<i class="fas fa-stop"></i> Cancelar';
-            
-            const progressBar = document.getElementById('progressBar');
-            const progressFill = document.getElementById('progressFill');
-            progressBar.classList.add('active');
-            
-            let verified = 0;
-            let working = 0;
-            let failed = 0;
-            
-            // Activar Wake Lock si está disponible
-            await requestWakeLock();
-            
-            for (let i = 0; i < channels.length; i++) {
-                if (verificationCanceled) break;
-                
-                const channel = channels[i];
-                if (channel.verified === true) {
-                    verified++;
-                    continue;
-                }
-                
-                channel.verifying = true;
-                channel.verified = undefined;
+            const confirmMsg = `¿Eliminar ${failedChannels.length} canales que NO funcionan?`;
+            if (confirm(confirmMsg)) {
+                channels = channels.filter(c => c.verified !== false);
                 renderChannels();
-                
-                const result = await verifyChannelDirect(channel.link, timeout);
-                
-                if (verificationCanceled) break;
-                
-                channel.verified = result;
-                channel.verifying = false;
-                
-                if (result) {
-                    channel.selected = true;
-                    working++;
-                } else {
-                    channel.selected = false;
-                    failed++;
-                }
-                
-                verified++;
-                
-                const progress = (verified / channels.length) * 100;
-                progressFill.style.width = progress + '%';
-                renderChannels();
-                
-                await sleep(300);
-            }
-            
-            finishVerification(working, failed);
-        }
-        
-        function verifyChannelDirect(url, timeout) {
-            return new Promise((resolve) => {
-                const video = document.createElement('video');
-                let resolved = false;
-                
-                const timeoutId = setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        video.pause();
-                        video.src = '';
-                        resolve(false);
-                    }
-                }, timeout);
-                
-                video.onloadeddata = function() {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timeoutId);
-                        video.pause();
-                        video.src = '';
-                        resolve(true);
-                    }
-                };
-                
-                video.onerror = function() {
-                    if (!resolved) {
-                        resolved = true;
-                        clearTimeout(timeoutId);
-                        video.pause();
-                        video.src = '';
-                        resolve(false);
-                    }
-                };
-                
-                video.onloadstart = function() {
-                    video.play().catch(() => {});
-                };
-                
-                video.src = url;
-                video.load();
-            });
-        }
-        
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms));
-        }
-        
-        // ==========================================
-        // ACTUALIZACIÓN DE PROGRESO
-        // ==========================================
-        
-        function updateVerificationProgress(current, total, channel, result, working, failed) {
-            const progressBar = document.getElementById('progressBar');
-            const progressFill = document.getElementById('progressFill');
-            
-            const progress = (current / total) * 100;
-            progressFill.style.width = progress + '%';
-            
-            // Actualizar el canal específico
-            const index = channels.findIndex(c => c.link === channel.link);
-            if (index !== -1) {
-                channels[index].verified = result;
-                channels[index].verifying = false;
-                if (result) {
-                    channels[index].selected = true;
-                } else {
-                    channels[index].selected = false;
-                }
-                renderChannels();
-            }
-            
-            // Actualizar estadísticas
-            if (working !== undefined) {
-                document.getElementById('workingChannels').textContent = working;
-            }
-            if (failed !== undefined) {
-                document.getElementById('failedChannels').textContent = failed;
+                showToast(`🗑️ Se eliminaron ${failedChannels.length} canales no funcionales`);
             }
         }
         
-        function applyVerificationResults(results) {
-            results.forEach(result => {
-                if (result.index < channels.length) {
-                    channels[result.index].verified = result.working;
-                    channels[result.index].verifying = false;
-                    if (result.working) {
-                        channels[result.index].selected = true;
-                    } else {
-                        channels[result.index].selected = false;
-                    }
-                }
-            });
-        }
-        
-        function finishVerification(working, failed) {
-            isVerifying = false;
-            releaseWakeLock();
-            
-            const btn = document.getElementById('btnVerify');
-            btn.classList.remove('verifying');
-            btn.innerHTML = '<i class="fas fa-check-double"></i> Verificar';
-            
-            const progressBar = document.getElementById('progressBar');
-            progressBar.classList.remove('active');
-            document.getElementById('progressFill').style.width = '0%';
-            
-            // Actualizar estadísticas si no vienen del SW
-            if (working === undefined) {
-                working = channels.filter(c => c.verified === true).length;
-                failed = channels.filter(c => c.verified === false).length;
-            }
-            
-            document.getElementById('workingChannels').textContent = working;
-            document.getElementById('failedChannels').textContent = failed;
-            
-            if (!verificationCanceled) {
-                showToast(`✅ Verificación completada: ${working} funcionan, ${failed} no funcionan`);
-            }
-            
-            renderChannels();
-        }
-        
-        // Reiniciar verificación
+        // Reiniciar verificación (borrar estados de verificación)
         function resetVerification() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación actual');
@@ -1385,21 +941,8 @@
                 });
                 renderChannels();
                 showToast('🔄 Estados de verificación reiniciados');
-                
-                // Resetear estadísticas
-                document.getElementById('workingChannels').textContent = '0';
-                document.getElementById('failedChannels').textContent = '0';
             }
         }
-        
-        // ==========================================
-        // FUNCIONES EXISTENTES (SIN CAMBIOS)
-        // ==========================================
-        
-        // Base de datos en localStorage
-        let channels = JSON.parse(localStorage.getItem('iptvChannels')) || [];
-        let currentVideoIndex = null;
-        let isPiPActive = false;
         
         // Renderizar canales
         function renderChannels() {
@@ -1491,13 +1034,15 @@
             return div.innerHTML;
         }
         
+        // ============ VERIFICACIÓN DE CANALES ============
+        
         // Verificar un solo canal
         function verifySingleChannel(index) {
             if (isVerifying) return;
             const channel = channels[index];
             if (!channel) return;
             
-            const timeout = getVerifyTimeout() * 1000;
+            const timeout = getVerifyTimeout();
             
             channel.verifying = true;
             channel.verified = undefined;
@@ -1516,9 +1061,9 @@
                     video.pause();
                     video.src = '';
                     renderChannels();
-                    showToast(`❌ ${channel.name} - Timeout (${timeout/1000}s)`);
+                    showToast(`❌ ${channel.name} - Timeout (${timeout}s)`);
                 }
-            }, timeout);
+            }, timeout * 1000);
             
             video.onloadeddata = function() {
                 if (!canceled) {
@@ -1552,6 +1097,145 @@
             video.load();
             video.play().catch(() => {});
         }
+        
+        // Verificar todos los canales
+        async function startVerification() {
+            if (isVerifying) {
+                verificationCanceled = true;
+                isVerifying = false;
+                document.getElementById('btnVerify').classList.remove('verifying');
+                document.getElementById('btnVerify').textContent = 'Verificar';
+                showToast('⏹️ Verificación cancelada');
+                
+                channels.forEach(c => {
+                    c.verifying = false;
+                });
+                renderChannels();
+                return;
+            }
+            
+            const toVerify = channels.filter(c => c.verified !== true);
+            if (toVerify.length === 0) {
+                showToast('✅ Todos los canales ya están verificados');
+                return;
+            }
+            
+            const timeout = getVerifyTimeout();
+            
+            isVerifying = true;
+            verificationCanceled = false;
+            
+            const btn = document.getElementById('btnVerify');
+            btn.classList.add('verifying');
+            btn.textContent = 'Cancelar';
+            
+            const progressBar = document.getElementById('progressBar');
+            const progressFill = document.getElementById('progressFill');
+            progressBar.classList.add('active');
+            
+            let verified = 0;
+            let working = 0;
+            let failed = 0;
+            
+            for (let i = 0; i < channels.length; i++) {
+                if (verificationCanceled) break;
+                
+                const channel = channels[i];
+                if (channel.verified === true) {
+                    verified++;
+                    continue;
+                }
+                
+                channel.verifying = true;
+                channel.verified = undefined;
+                renderChannels();
+                
+                const result = await verifyChannel(channel, timeout);
+                
+                if (verificationCanceled) break;
+                
+                channel.verified = result;
+                channel.verifying = false;
+                
+                if (result) {
+                    channel.selected = true;
+                    working++;
+                } else {
+                    channel.selected = false;
+                    failed++;
+                }
+                
+                verified++;
+                
+                const progress = (verified / channels.length) * 100;
+                progressFill.style.width = progress + '%';
+                renderChannels();
+                
+                await sleep(300);
+            }
+            
+            isVerifying = false;
+            btn.classList.remove('verifying');
+            btn.textContent = 'Verificar';
+            progressBar.classList.remove('active');
+            progressFill.style.width = '0%';
+            
+            if (!verificationCanceled) {
+                showToast(`✅ Verificación completada: ${working} funcionan, ${failed} no funcionan`);
+            }
+            
+            renderChannels();
+        }
+        
+        // Verificar un canal individual (promesa)
+        function verifyChannel(channel, timeout) {
+            return new Promise((resolve) => {
+                const video = document.createElement('video');
+                let resolved = false;
+                
+                const timeoutId = setTimeout(() => {
+                    if (!resolved) {
+                        resolved = true;
+                        video.pause();
+                        video.src = '';
+                        resolve(false);
+                    }
+                }, timeout * 1000);
+                
+                video.onloadeddata = function() {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeoutId);
+                        video.pause();
+                        video.src = '';
+                        resolve(true);
+                    }
+                };
+                
+                video.onerror = function() {
+                    if (!resolved) {
+                        resolved = true;
+                        clearTimeout(timeoutId);
+                        video.pause();
+                        video.src = '';
+                        resolve(false);
+                    }
+                };
+                
+                video.onloadstart = function() {
+                    video.play().catch(() => {});
+                };
+                
+                video.src = channel.link;
+                video.load();
+            });
+        }
+        
+        function sleep(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        
+        // ============ FIN VERIFICACIÓN ============
         
         // Procesar contenido M3U
         function processM3UContent(content) {
@@ -1822,7 +1506,20 @@
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
             }
-            channels[index].selected = !channels[index].selected;
+            
+            const channel = channels[index];
+            
+            // Si el canal está marcado como no funcional y se selecciona, se convierte en funcional
+            if (channel.verified === false && !channel.selected) {
+                channel.verified = true;
+                channel.selected = true;
+                renderChannels();
+                showToast(`✅ ${channel.name} - Marcado como funcional`);
+                return;
+            }
+            
+            // Comportamiento normal de toggle
+            channel.selected = !channel.selected;
             renderChannels();
         }
         
@@ -1979,18 +1676,6 @@
             }, 4000);
         }
         
-        // ==========================================
-        // INICIALIZACIÓN
-        // ==========================================
-        
-        // Registrar Service Worker al cargar la página
-        if ('serviceWorker' in navigator) {
-            registerServiceWorker();
-        } else {
-            updateSWStatus(false);
-            console.log('⚠️ Service Worker no soportado en este navegador');
-        }
-        
         // Enter key
         document.addEventListener('keydown', function(e) {
             if (e.key === 'Enter') {
@@ -2016,9 +1701,6 @@
         
         // Inicializar
         renderChannels();
-        
-        console.log('✅ MLS IPTV iniciado');
-        console.log('📊 Canales cargados:', channels.length);
     </script>
 </body>
 </html>
