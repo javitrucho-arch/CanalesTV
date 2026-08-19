@@ -666,6 +666,115 @@
             max-width: none;
         }
         
+        /* Estilos del diálogo personalizado */
+        .custom-confirm-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 9999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        .custom-confirm-dialog {
+            background: #1a1a2e;
+            padding: 30px;
+            border-radius: 16px;
+            max-width: 90%;
+            width: 420px;
+            color: #fff;
+            border: 2px solid rgba(102, 126, 234, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+            animation: slideUp 0.3s ease;
+        }
+        
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px) scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+        
+        .custom-confirm-dialog .confirm-icon {
+            text-align: center;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+        
+        .custom-confirm-dialog .confirm-message {
+            font-size: 1.1rem;
+            text-align: center;
+            margin-bottom: 25px;
+            line-height: 1.5;
+            color: #e0e0e0;
+        }
+        
+        .custom-confirm-dialog .confirm-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+        }
+        
+        .custom-confirm-dialog .confirm-buttons button {
+            padding: 10px 28px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-cancel {
+            background: rgba(255, 255, 255, 0.08);
+            color: #fff;
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.15);
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-accept {
+            background: linear-gradient(135deg, #f5576c, #f093fb);
+            color: #fff;
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-accept:hover {
+            transform: scale(1.02);
+            box-shadow: 0 4px 20px rgba(245, 87, 108, 0.4);
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-accept-success {
+            background: linear-gradient(135deg, #00b09b, #96c93d);
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-accept-success:hover {
+            box-shadow: 0 4px 20px rgba(0, 176, 155, 0.4);
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-accept-info {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+        
+        .custom-confirm-dialog .confirm-buttons .btn-accept-info:hover {
+            box-shadow: 0 4px 20px rgba(79, 172, 254, 0.4);
+        }
+        
         @media (max-width: 600px) {
             .controls {
                 flex-direction: column;
@@ -754,6 +863,20 @@
                 min-width: 40px;
                 max-width: 40px;
                 padding: 12px 6px;
+            }
+            
+            .custom-confirm-dialog {
+                padding: 20px;
+                width: 92%;
+            }
+            
+            .custom-confirm-dialog .confirm-buttons {
+                flex-direction: column;
+            }
+            
+            .custom-confirm-dialog .confirm-buttons button {
+                width: 100%;
+                justify-content: center;
             }
         }
         
@@ -894,6 +1017,83 @@
         let isVerifying = false;
         let verificationCanceled = false;
         
+        // ============================================
+        // DIÁLOGO PERSONALIZADO (reemplaza confirm())
+        // ============================================
+        function showConfirm(message, options = {}) {
+            return new Promise((resolve) => {
+                // Si ya hay un diálogo abierto, lo cerramos
+                const existing = document.querySelector('.custom-confirm-overlay');
+                if (existing) {
+                    document.body.removeChild(existing);
+                }
+                
+                const overlay = document.createElement('div');
+                overlay.className = 'custom-confirm-overlay';
+                
+                const icon = options.icon || '⚠️';
+                const acceptText = options.acceptText || 'Aceptar';
+                const cancelText = options.cancelText || 'Cancelar';
+                const acceptClass = options.acceptClass || 'btn-accept';
+                
+                overlay.innerHTML = `
+                    <div class="custom-confirm-dialog">
+                        <div class="confirm-icon">${icon}</div>
+                        <div class="confirm-message">${message}</div>
+                        <div class="confirm-buttons">
+                            <button class="btn-cancel" id="confirmCancel">${cancelText}</button>
+                            <button class="${acceptClass}" id="confirmAccept">${acceptText}</button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(overlay);
+                
+                const cancelBtn = overlay.querySelector('#confirmCancel');
+                const acceptBtn = overlay.querySelector('#confirmAccept');
+                
+                const cleanup = (result) => {
+                    if (overlay.parentNode) {
+                        document.body.removeChild(overlay);
+                    }
+                    resolve(result);
+                };
+                
+                cancelBtn.onclick = () => cleanup(false);
+                acceptBtn.onclick = () => cleanup(true);
+                
+                // Cerrar al hacer clic fuera (solo si se permite)
+                overlay.onclick = (e) => {
+                    if (e.target === overlay && options.closeOnOutsideClick !== false) {
+                        cleanup(false);
+                    }
+                };
+                
+                // Cerrar con Escape
+                const onKeydown = (e) => {
+                    if (e.key === 'Escape') {
+                        cleanup(false);
+                        document.removeEventListener('keydown', onKeydown);
+                    }
+                };
+                document.addEventListener('keydown', onKeydown);
+            });
+        }
+        
+        // Versión síncrona usando async/await (para mantener compatibilidad)
+        async function confirmAsync(message, options = {}) {
+            return await showConfirm(message, options);
+        }
+        
+        // Función para usar en lugar de confirm() con callback
+        function confirmWithCallback(message, callback, options = {}) {
+            showConfirm(message, options).then(callback);
+        }
+        
+        // ============================================
+        // FIN DIÁLOGO PERSONALIZADO
+        // ============================================
+        
         // Obtener timeout de verificación
         function getVerifyTimeout() {
             const input = document.getElementById('verifyTimeout');
@@ -904,7 +1104,7 @@
         }
         
         // Borrar canales que no funcionan
-        function deleteFailedChannels() {
+        async function deleteFailedChannels() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
@@ -916,8 +1116,16 @@
                 return;
             }
             
-            const confirmMsg = `¿Eliminar ${failedChannels.length} canales que NO funcionan?`;
-            if (confirm(confirmMsg)) {
+            const confirmed = await confirmAsync(
+                `¿Eliminar ${failedChannels.length} canales que NO funcionan?`,
+                {
+                    icon: '🗑️',
+                    acceptText: 'Eliminar',
+                    acceptClass: 'btn-accept'
+                }
+            );
+            
+            if (confirmed) {
                 channels = channels.filter(c => c.verified !== false);
                 renderChannels();
                 showToast(`🗑️ Se eliminaron ${failedChannels.length} canales no funcionales`);
@@ -925,7 +1133,7 @@
         }
         
         // Reiniciar verificación (borrar estados de verificación)
-        function resetVerification() {
+        async function resetVerification() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación actual');
                 return;
@@ -934,7 +1142,17 @@
                 showToast('⚠️ No hay canales para reiniciar');
                 return;
             }
-            if (confirm('¿Reiniciar todos los estados de verificación?')) {
+            
+            const confirmed = await confirmAsync(
+                '¿Reiniciar todos los estados de verificación?',
+                {
+                    icon: '🔄',
+                    acceptText: 'Reiniciar',
+                    acceptClass: 'btn-accept-info'
+                }
+            );
+            
+            if (confirmed) {
                 channels.forEach(c => {
                     c.verified = undefined;
                     c.verifying = false;
@@ -1342,7 +1560,7 @@
         }
         
         // Seleccionar todos
-        function selectAll() {
+        async function selectAll() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
@@ -1351,7 +1569,17 @@
                 showToast('⚠️ No hay canales para seleccionar');
                 return;
             }
-            if (confirm('¿Seleccionar todos los canales?')) {
+            
+            const confirmed = await confirmAsync(
+                '¿Seleccionar todos los canales?',
+                {
+                    icon: '✅',
+                    acceptText: 'Seleccionar todos',
+                    acceptClass: 'btn-accept-success'
+                }
+            );
+            
+            if (confirmed) {
                 channels.forEach(c => c.selected = true);
                 renderChannels();
                 showToast('✅ Todos los canales seleccionados');
@@ -1359,7 +1587,7 @@
         }
         
         // Deseleccionar todos
-        function deselectAll() {
+        async function deselectAll() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
@@ -1368,7 +1596,17 @@
                 showToast('⚠️ No hay canales para deseleccionar');
                 return;
             }
-            if (confirm('¿Deseleccionar todos los canales?')) {
+            
+            const confirmed = await confirmAsync(
+                '¿Deseleccionar todos los canales?',
+                {
+                    icon: '🔲',
+                    acceptText: 'Deseleccionar todos',
+                    acceptClass: 'btn-accept-info'
+                }
+            );
+            
+            if (confirmed) {
                 channels.forEach(c => c.selected = false);
                 renderChannels();
                 showToast('🔲 Todos los canales deseleccionados');
@@ -1524,13 +1762,24 @@
         }
         
         // Eliminar canal
-        function deleteChannel(index) {
+        async function deleteChannel(index) {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
             }
             event.stopPropagation();
-            if (confirm('¿Eliminar este canal?')) {
+            
+            const channel = channels[index];
+            const confirmed = await confirmAsync(
+                `¿Eliminar el canal "${channel.name}"?`,
+                {
+                    icon: '🗑️',
+                    acceptText: 'Eliminar',
+                    acceptClass: 'btn-accept'
+                }
+            );
+            
+            if (confirmed) {
                 if (currentVideoIndex === index) {
                     closePlayer();
                 }
@@ -1565,7 +1814,7 @@
         }
         
         // Eliminar todos
-        function clearAll() {
+        async function clearAll() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
@@ -1574,7 +1823,17 @@
                 showToast('⚠️ No hay canales para eliminar');
                 return;
             }
-            if (confirm('¿Eliminar TODOS los canales?')) {
+            
+            const confirmed = await confirmAsync(
+                '¿Eliminar TODOS los canales?',
+                {
+                    icon: '⚠️',
+                    acceptText: 'Eliminar todos',
+                    acceptClass: 'btn-accept'
+                }
+            );
+            
+            if (confirmed) {
                 closePlayer();
                 channels = [];
                 renderChannels();
