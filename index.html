@@ -7,6 +7,8 @@
     <link rel="manifest" href="manifest.json">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ... (todos los estilos iguales, no los repito para no alargar) ... */
+        /* Mantén todos los estilos que ya tenías */
         * {
             margin: 0;
             padding: 0;
@@ -1018,6 +1020,30 @@
         let verificationCanceled = false;
         
         // ============================================
+        // GUARDAR CONFIGURACIÓN EN localStorage
+        // ============================================
+        function saveSettings() {
+            const timeout = document.getElementById('verifyTimeout').value;
+            localStorage.setItem('verifyTimeout', timeout);
+        }
+        
+        function loadSettings() {
+            const savedTimeout = localStorage.getItem('verifyTimeout');
+            if (savedTimeout !== null) {
+                document.getElementById('verifyTimeout').value = savedTimeout;
+            }
+        }
+        
+        // Guardar el timeout cuando cambie
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+            
+            // Guardar cuando cambie el valor
+            document.getElementById('verifyTimeout').addEventListener('change', saveSettings);
+            document.getElementById('verifyTimeout').addEventListener('input', saveSettings);
+        });
+        
+        // ============================================
         // DIÁLOGO PERSONALIZADO (reemplaza confirm())
         // ============================================
         function showConfirm(message, options = {}) {
@@ -1062,14 +1088,12 @@
                 cancelBtn.onclick = () => cleanup(false);
                 acceptBtn.onclick = () => cleanup(true);
                 
-                // Cerrar al hacer clic fuera (solo si se permite)
                 overlay.onclick = (e) => {
                     if (e.target === overlay && options.closeOnOutsideClick !== false) {
                         cleanup(false);
                     }
                 };
                 
-                // Cerrar con Escape
                 const onKeydown = (e) => {
                     if (e.key === 'Escape') {
                         cleanup(false);
@@ -1080,14 +1104,8 @@
             });
         }
         
-        // Versión síncrona usando async/await (para mantener compatibilidad)
         async function confirmAsync(message, options = {}) {
             return await showConfirm(message, options);
-        }
-        
-        // Función para usar en lugar de confirm() con callback
-        function confirmWithCallback(message, callback, options = {}) {
-            showConfirm(message, options).then(callback);
         }
         
         // ============================================
@@ -1747,7 +1765,6 @@
             
             const channel = channels[index];
             
-            // Si el canal está marcado como no funcional y se selecciona, se convierte en funcional
             if (channel.verified === false && !channel.selected) {
                 channel.verified = true;
                 channel.selected = true;
@@ -1756,7 +1773,6 @@
                 return;
             }
             
-            // Comportamiento normal de toggle
             channel.selected = !channel.selected;
             renderChannels();
         }
@@ -1871,8 +1887,10 @@
             event.target.value = '';
         }
         
-        // Generar M3U
-        function generateM3U() {
+        // ============================================
+        // GENERAR M3U CON SELECCIÓN DE UBICACIÓN
+        // ============================================
+        async function generateM3U() {
             if (isVerifying) {
                 showToast('⚠️ Espera a que termine la verificación');
                 return;
@@ -1884,6 +1902,7 @@
                 return;
             }
             
+            // Usar el diálogo personalizado para el nombre del archivo
             const fileName = prompt('Nombre del archivo:', `lista_${new Date().toISOString().slice(0,10)}.m3u`);
             
             if (fileName === null) {
@@ -1911,17 +1930,63 @@
                 m3uContent += `${channel.link}\n`;
             });
             
-            const blob = new Blob([m3uContent], { type: 'text/plain' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = finalName;
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            URL.revokeObjectURL(url);
-            
-            showToast(`📥 Archivo guardado como: ${finalName} (${selected.length} canales)`);
+            try {
+                // Usar la API de File System Access (moderna) si está disponible
+                if ('showDirectoryPicker' in window || 'showSaveFilePicker' in window) {
+                    try {
+                        const handle = await window.showSaveFilePicker({
+                            suggestedName: finalName,
+                            types: [{
+                                description: 'Archivo M3U',
+                                accept: {
+                                    'text/plain': ['.m3u']
+                                }
+                            }]
+                        });
+                        
+                        const writable = await handle.createWritable();
+                        await writable.write(m3uContent);
+                        await writable.close();
+                        
+                        showToast(`📥 Archivo guardado como: ${finalName} (${selected.length} canales)`);
+                        return;
+                    } catch (err) {
+                        // Si el usuario cancela o falla, usar el método tradicional
+                        if (err.name === 'AbortError' || err.name === 'SecurityError') {
+                            // El usuario canceló, no hacer nada
+                            return;
+                        }
+                        console.log('Fallback al método tradicional:', err);
+                    }
+                }
+                
+                // Método tradicional (descarga automática)
+                const blob = new Blob([m3uContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = finalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                
+                showToast(`📥 Archivo guardado como: ${finalName} (${selected.length} canales)`);
+                
+            } catch (error) {
+                console.error('Error al guardar archivo:', error);
+                // Fallback final: descarga tradicional
+                const blob = new Blob([m3uContent], { type: 'text/plain' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = finalName;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                showToast(`📥 Archivo guardado como: ${finalName} (${selected.length} canales)`);
+            }
         }
         
         // Toast notifications
@@ -1960,6 +2025,7 @@
         
         // Inicializar
         renderChannels();
+        loadSettings();
     </script>
 </body>
 </html>
