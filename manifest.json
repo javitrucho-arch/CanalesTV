@@ -3,7 +3,7 @@
     "short_name": "CanalesTV",
     "description": "listas m3u",
     "start_url": "canales.html",
-    "display": "fullscreen",
+    "display": "standalone",
     "background_color": "#ffffff",
     "theme_color": "#2196F3",
     "icons": [
